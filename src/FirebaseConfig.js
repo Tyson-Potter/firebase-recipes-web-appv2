@@ -10,8 +10,9 @@ const config = {
   appId: process.env.REACT_APP_APP_ID,
 };
 
+// eslint-disable-next-line no-unused-vars
 const firebaseApp = initializeApp(config);
-console.log(firebaseApp);
+
 const firebaseConfig = {};
 
 export default firebaseConfig;
