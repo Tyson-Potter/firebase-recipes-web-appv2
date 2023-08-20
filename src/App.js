@@ -11,7 +11,7 @@ function App() {
   return (
     <div className="App">
       <div className="title-row">
-        <h1 className="title">Firebase Recipes</h1>
+        <h1 className="title">1Firebase Recipes</h1>
 
         <LoginForm existingUser={user}></LoginForm>
       </div>
