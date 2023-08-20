@@ -1,6 +1,6 @@
 import "./App.css";
 import firebaseConfig from "./FirebaseConfig";
-
+console.log("hi");
 function App() {
   return (
     <div className="App">
