@@ -1,5 +1,5 @@
 import "./App.css";
-import firebaseConfig from "./FirebaseConfig";
+// import firebaseConfig from "./FirebaseConfig";
 console.log("hiii");
 function App() {
   return (
