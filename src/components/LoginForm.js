@@ -26,7 +26,7 @@ function LoginForm({ existingUser }) {
       return;
     }
     try {
-      await FirebaseAuthService.sendPasswordResetEmail(username);
+      FirebaseAuthService.sendPasswordResetEmail(username);
       alert("sent the password reset email ");
     } catch (error) {
       alert(error.message);
