@@ -280,6 +280,7 @@ html {
   font-size: 0.9rem;
   background: #f1f3f4;
   border: none;
+  width: 13.3rem;
 }
 .select:focus {
   background: #fff;
@@ -292,6 +293,10 @@ html {
   display: flex;
   align-items: center;
 }
+
+.directions {
+  height: 12rem;
+}
 .input-text {
   background: #f1f3f4;
   border: none;
@@ -299,6 +304,7 @@ html {
   font-size: 0.75rem;
   margin-left: 0.35rem;
   border-radius: 0.2rem;
+  width: 12rem;
 }
 .input-text:focus {
   background: #fff;
