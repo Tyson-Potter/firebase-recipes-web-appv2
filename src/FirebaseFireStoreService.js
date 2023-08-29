@@ -13,14 +13,13 @@ const createDocument = async (collectionName, document) => {
   }
 };
 
-// const readDocuments = (collectionName) => {
-//   return db.collection(collectionName).get();
-// };
+
 const readDocuments = async (collectionName) => {
   const querySnapshot = await getDocs(collection(db, collectionName));
-  const documents = querySnapshot.docs.map((doc) => doc.data());
+  const documents = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   return documents;
 };
+
 
 const FirebaseFirestoreService = {
   createDocument,
