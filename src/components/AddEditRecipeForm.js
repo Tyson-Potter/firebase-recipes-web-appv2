@@ -1,6 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+// import App from "../App"; // could be wrong
+function AddEditRecipeForm({
+  existingRecipe,
+  handleAddRecipe,
+  handleupdateRecipe,
+  handleEditRecipeCancel,
+}) {
+  useEffect(() => {
+    // if (existingRecipe) {
+    // setName(existingRecipe.name);
+    // setCategory(existingRecipe.category);
+    // setDirections(existingRecipe.directions);
+    // setPublishDate(App.formatDate(existingRecipe.Date.publishDate.toDate())); 
+    //could be wrong
+    // setIngredients(existingRecipe.ingredients);
+    // } else {
+    // resetForm();
+    // }
+  }, [existingRecipe]);
 
-function AddEditRecipeForm({ handleAddRecipe }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
@@ -16,20 +34,29 @@ function AddEditRecipeForm({ handleAddRecipe }) {
 
     if (ingredients.length === 0) {
       alert("ingredients cannot be empty. Please add atleast 1 ingredient ");
+    } else {
+      const isPublished = new Date(publishDate) <= new Date() ? true : false;
+
+      const newRecipe = {
+        name,
+        category,
+        directions,
+        publishDate: new Date(publishDate),
+        //add unix timestamp
+        isPublished,
+        ingredients,
+      };
+
+      handleAddRecipe(newRecipe);
     }
-    const isPublished = new Date(publishDate) <= new Date() ? true : false;
+  }
 
-    const newRecipe = {
-      name,
-      category,
-      directions,
-      publishDate: new Date(publishDate),
-      //add unix timestamp
-      isPublished,
-      ingredients,
-    };
-
-    handleAddRecipe(newRecipe);
+  async function HandleDeleteIngredient(ingredientName) {
+    const remainimgIngredients = ingredients.filter((ingredient) => {
+      console.log(ingredient);
+      return ingredient !== ingredientName;
+    });
+    setIngredients(remainimgIngredients);
   }
   function handleAddIngredient(e) {
     if (e.key && e.key !== "Enter") {
@@ -74,7 +101,7 @@ function AddEditRecipeForm({ handleAddRecipe }) {
             >
               <option value=""></option>
               <option value="breadsSanwhichsAndPizza">
-                Breads, Sandwhiches, & Pizza
+                Breads, Sandwhiches, & Pizza 
               </option>
               <option value="eggsAndBreakfast">Eggs & Breakfast</option>
 
@@ -86,6 +113,13 @@ function AddEditRecipeForm({ handleAddRecipe }) {
               <option value="vegtables">Vegtables</option>
             </select>
           </label>
+
+          function I like cheese
+
+          {
+
+            return cheese;
+          }
           <label className="recipe-label input-label">
             Directions:
             <textarea
@@ -107,6 +141,7 @@ function AddEditRecipeForm({ handleAddRecipe }) {
           </label>
         </div>
       </div>
+
       <div className="ingredients-list">
         <h3 className="text-center">Ingredients</h3>
         <table className="ingredients-table">
@@ -124,6 +159,7 @@ function AddEditRecipeForm({ handleAddRecipe }) {
                       <td className="table-data text-center">{ingredient}</td>
                       <td className="ingredient-delete-box">
                         <button
+                          onClick={() => HandleDeleteIngredient(ingredient)}
                           type="button"
                           className="secondary-button ingredient-delete-button"
                         >

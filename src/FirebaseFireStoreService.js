@@ -1,6 +1,13 @@
 import firebase from "./FirebaseConfig";
 
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  where,
+  query,
+} from "firebase/firestore";
 
 const db = getFirestore(firebase);
 
@@ -13,13 +20,29 @@ const createDocument = async (collectionName, document) => {
   }
 };
 
+const readDocuments = async ({ collection: collectionName, queries }) => {
+  let collectionRef = collection(db, collectionName);
 
-const readDocuments = async (collectionName) => {
-  const querySnapshot = await getDocs(collection(db, collectionName));
-  const documents = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  let queryRef = collectionRef;
+
+  if (queries && queries.length > 0) {
+    queries.forEach(({ field, condition, value }) => {
+      queryRef = query(queryRef, where(field, condition, value));
+    });
+  }
+
+  const querySnapshot = await getDocs(queryRef);
+  const documents = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
   return documents;
 };
 
+const updateDocument = (collectionName, id, document) => {
+  return db.collection(collectionName).doc(id).update(document);
+};
 
 const FirebaseFirestoreService = {
   createDocument,
