@@ -11,7 +11,7 @@ function AddEditRecipeForm({
     // setName(existingRecipe.name);
     // setCategory(existingRecipe.category);
     // setDirections(existingRecipe.directions);
-    // setPublishDate(App.formatDate(existingRecipe.Date.publishDate.toDate())); 
+    // setPublishDate(App.formatDate(existingRecipe.Date.publishDate.toDate()));
     //could be wrong
     // setIngredients(existingRecipe.ingredients);
     // } else {
@@ -101,7 +101,7 @@ function AddEditRecipeForm({
             >
               <option value=""></option>
               <option value="breadsSanwhichsAndPizza">
-                Breads, Sandwhiches, & Pizza 
+                Breads, Sandwhiches, & Pizza
               </option>
               <option value="eggsAndBreakfast">Eggs & Breakfast</option>
 
@@ -114,12 +114,6 @@ function AddEditRecipeForm({
             </select>
           </label>
 
-          function I like cheese
-
-          {
-
-            return cheese;
-          }
           <label className="recipe-label input-label">
             Directions:
             <textarea
