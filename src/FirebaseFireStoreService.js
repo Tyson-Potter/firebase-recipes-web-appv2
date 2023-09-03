@@ -7,6 +7,8 @@ import {
   getDocs,
   where,
   query,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 
 const db = getFirestore(firebase);
@@ -40,13 +42,20 @@ const readDocuments = async ({ collection: collectionName, queries }) => {
   return documents;
 };
 
-const updateDocument = (collectionName, id, document) => {
-  return db.collection(collectionName).doc(id).update(document);
+const updateDocument = async (collectionName, id, document) => {
+  try {
+    const docRef = doc(db, collectionName, id);
+    await updateDoc(docRef, document);
+    console.log("Document updated successfully");
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
 };
 
 const FirebaseFirestoreService = {
   createDocument,
   readDocuments,
+  updateDocument,
 };
 
 export default FirebaseFirestoreService;

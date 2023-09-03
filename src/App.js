@@ -85,7 +85,9 @@ function App() {
       handleFetchRecipes();
 
       alert(`successfully updated a recipe with an ID = ${recipeId}}`);
-      setCurrentRecipe(null);
+      startTransition(() => {
+        setCurrentRecipe(null);
+      });
     } catch (error) {
       alert(error.message);
       throw error;
@@ -100,7 +102,7 @@ function App() {
       startTransition(() => {
         setCurrentRecipe(selectedRecipe);
       });
-      // setCurrentRecipe(selectedRecipe);
+
       window.scrollTo(0, document.body.scrollHeight);
     }
   }
