@@ -14,10 +14,12 @@ function App() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [orderBy, setOrderBy] = useState("publishDateDesc");
   const [recipesPerPage, setRecipesPerPage] = useState(3);
-  const [recipesCount, setRecipesCount] = useState(0);
+  const [recipesCount, setRecipesCount] = useState(count());
+  // FirebaseFireStoreService.getDocumentCount("recipes").then(setRecipesCount);
   useEffect(() => {
     setIsloading(true);
-    FirebaseFireStoreService.getDocumentCount("recipes").then(setRecipesCount);
+    setRecipesCount(count());
+    console.log(recipesCount + "Reccount");
     fetchRecipes()
       .then((fetchedRecipes) => {
         setRecipes(fetchedRecipes);
@@ -30,9 +32,52 @@ function App() {
         setIsloading(false);
       });
   }, [user, categoryFilter, orderBy, recipesPerPage]);
+  // useEffect(() => {
+  // console.log( await FirebaseFireStoreService.getDocumentCount("recipes"));
+  // }, [user, categoryFilter, orderBy, recipesPerPage]);
 
   FirebaseAuthService.subscribeToAuthChanges(setUser);
+  async function count() {
+    const queries = [];
+    if (categoryFilter) {
+      queries.push({
+        field: "category",
+        condition: "==",
+        value: categoryFilter,
+      });
+    }
+    if (!user) {
+      queries.push({
+        field: "isPublished",
+        condition: "==",
+        value: true,
+      });
+    }
+    let fetchedRecipes = [];
+    const orderByField = "publishDate";
+    let orderByDirection;
 
+    if (orderBy) {
+      switch (orderBy) {
+        case "publishDateAsc":
+          orderByDirection = "asc";
+          break;
+        case "publishDateDesc":
+          orderByDirection = "desc";
+          break;
+        default:
+          break;
+      }
+    }
+    let count = FirebaseFireStoreService.getDocumentCount({
+      collection: "recipes",
+      queries: queries,
+      orderByField: orderByField,
+      orderByDirection: orderByDirection,
+    });
+    console.log(count.size + "coungeageageagt");
+    return count.size;
+  }
   async function fetchRecipes(cursorId = "") {
     const queries = [];
     if (categoryFilter) {
@@ -91,8 +136,6 @@ function App() {
         }));
         return fetchedRecipes;
       }
-
-      return newRecipes;
     } catch (error) {
       console.error(error.message);
       throw error;
