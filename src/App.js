@@ -4,7 +4,7 @@ import FirebaseFireStoreService from "./FirebaseFireStoreService";
 import LoginForm from "./components/LoginForm";
 import AddEditRecipeForm from "./components/AddEditRecipeForm";
 import "./App.css";
-import { orderBy } from "firebase/firestore";
+// import { orderBy, docs, map } from "firebase/firestore";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,9 +13,11 @@ function App() {
   const [isLoading, setIsloading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [orderBy, setOrderBy] = useState("publishDateDesc");
+  const [recipesPerPage, setRecipesPerPage] = useState(3);
+  const [recipesCount, setRecipesCount] = useState(0);
   useEffect(() => {
     setIsloading(true);
-
+    FirebaseFireStoreService.getDocumentCount("recipes").then(setRecipesCount);
     fetchRecipes()
       .then((fetchedRecipes) => {
         setRecipes(fetchedRecipes);
@@ -27,11 +29,11 @@ function App() {
       .finally(() => {
         setIsloading(false);
       });
-  }, [user, categoryFilter, orderBy]);
+  }, [user, categoryFilter, orderBy, recipesPerPage]);
 
   FirebaseAuthService.subscribeToAuthChanges(setUser);
 
-  async function fetchRecipes() {
+  async function fetchRecipes(cursorId = "") {
     const queries = [];
     if (categoryFilter) {
       queries.push({
@@ -47,7 +49,7 @@ function App() {
         value: true,
       });
     }
-
+    let fetchedRecipes = [];
     const orderByField = "publishDate";
     let orderByDirection;
 
@@ -69,17 +71,51 @@ function App() {
         queries: queries,
         orderByField: orderByField,
         orderByDirection: orderByDirection,
+        perPage: recipesPerPage,
+        cursorId: cursorId,
       });
-      let fetchedRecipes = response;
-      return fetchedRecipes;
+
+      let newRecipes = response.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      if (cursorId) {
+        let fetchedRecipes = [...recipes, ...newRecipes];
+
+        return fetchedRecipes;
+      } else {
+        let fetchedRecipes = response.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        return fetchedRecipes;
+      }
+
+      return newRecipes;
     } catch (error) {
       console.error(error.message);
       throw error;
     }
   }
-  async function handleFetchRecipes() {
+
+  function handleRecipesPerPageChange(event) {
+    const recipesPerPage = event.target.value;
+
+    startTransition(() => {
+      setRecipes([]);
+      setRecipesPerPage(recipesPerPage);
+    });
+  }
+  function handleLoadMoreRecipesClick() {
+    const lastRecipe = recipes[recipes.length - 1];
+    const cursorId = lastRecipe.id;
+
+    handleFetchRecipes(cursorId);
+  }
+  async function handleFetchRecipes(cursorId = "") {
     try {
-      const fetchedRecipes = await fetchRecipes();
+      const fetchedRecipes = await fetchRecipes(cursorId);
 
       setRecipes(fetchedRecipes);
     } catch (error) {
@@ -289,6 +325,39 @@ function App() {
             ) : null}
           </div>
         </div>
+
+        {isLoading || (recipes && recipes.length > 0) ? (
+          <>
+            <label className="input-label">
+              Recipes Per Page:
+              <select
+                value={recipesPerPage}
+                onChange={handleRecipesPerPageChange}
+                className="select"
+              >
+                <option value="3">3</option>
+                <option value="6">6</option>
+                <option value="9">9</option>
+              </select>
+            </label>
+          </>
+        ) : null}
+
+        {recipesCount > recipes.length ? (
+          <>
+            <label className="input-label">
+              <div className="pagination">
+                <button
+                  className="primary-button"
+                  onClick={handleLoadMoreRecipesClick}
+                  type="button"
+                >
+                  LOAD MORE RECIPES
+                </button>
+              </div>
+            </label>
+          </>
+        ) : null}
         {user ? (
           <AddEditRecipeForm
             existingRecipe={currentRecipe}

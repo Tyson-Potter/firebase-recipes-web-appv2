@@ -11,6 +11,9 @@ import {
   doc,
   deleteDoc,
   orderBy,
+  limit,
+  startAfter,
+  getDoc,
 } from "firebase/firestore";
 
 const db = getFirestore(firebase);
@@ -24,31 +27,50 @@ const createDocument = async (collectionName, document) => {
   }
 };
 
+const readDocument = async (collectionName, id) => {
+  const startAfterDocumentRef = doc(db, collectionName, id);
+
+  const docSnap = await getDoc(startAfterDocumentRef);
+  return docSnap;
+};
 const readDocuments = async ({
   collection: collectionName,
   queries,
   orderByField,
   orderByDirection,
+  perPage,
+  cursorId,
 }) => {
   let collectionRef = collection(db, collectionName);
 
-  let queryRef = collectionRef;
-
   if (queries && queries.length > 0) {
     queries.forEach(({ field, condition, value }) => {
-      queryRef = query(queryRef, where(field, condition, value));
+      collectionRef = query(collectionRef, where(field, condition, value));
     });
   }
   if (orderByField && orderByDirection) {
-    queryRef = query(queryRef, orderBy(orderByField, orderByDirection));
+    collectionRef = query(
+      collectionRef,
+      orderBy(orderByField, orderByDirection)
+    );
   }
-  const querySnapshot = await getDocs(queryRef);
-  let documents = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  if (perPage) {
+    collectionRef = query(collectionRef, limit(perPage));
+  }
+  if (cursorId) {
+    const startAfterDocumentSnapshot = await readDocument(
+      collectionName,
+      cursorId
+    );
 
-  return documents;
+    collectionRef = query(
+      collectionRef,
+      startAfter(startAfterDocumentSnapshot)
+    );
+  }
+
+  const querySnapshot = await getDocs(collectionRef);
+  return querySnapshot;
 };
 
 const updateDocument = async (collectionName, id, document) => {
@@ -65,12 +87,17 @@ const deleteDocument = async (collectionName, id) => {
   const docRef = doc(db, collectionName, id);
   return deleteDoc(docRef);
 };
-
+const getDocumentCount = async (collectionName) => {
+  const collectionRef = collection(db, collectionName);
+  const snapshot = await getDocs(collectionRef);
+  return snapshot.size;
+};
 const FirebaseFirestoreService = {
   createDocument,
   readDocuments,
   updateDocument,
   deleteDocument,
+  getDocumentCount,
 };
 
 export default FirebaseFirestoreService;
