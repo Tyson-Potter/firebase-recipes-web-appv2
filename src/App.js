@@ -4,13 +4,18 @@ import FirebaseFireStoreService from "./FirebaseFireStoreService";
 import LoginForm from "./components/LoginForm";
 import AddEditRecipeForm from "./components/AddEditRecipeForm";
 import "./App.css";
+import { orderBy } from "firebase/firestore";
 
 function App() {
   const [user, setUser] = useState(null);
   const [currentRecipe, setCurrentRecipe] = useState(null);
   const [recipes, setRecipes] = useState([]);
-
+  const [isLoading, setIsloading] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [orderBy, setOrderBy] = useState("publishDateDesc");
   useEffect(() => {
+    setIsloading(true);
+
     fetchRecipes()
       .then((fetchedRecipes) => {
         setRecipes(fetchedRecipes);
@@ -18,13 +23,23 @@ function App() {
       .catch((error) => {
         console.error(error.message);
         throw error;
+      })
+      .finally(() => {
+        setIsloading(false);
       });
-  }, [user]);
+  }, [user, categoryFilter, orderBy]);
 
   FirebaseAuthService.subscribeToAuthChanges(setUser);
 
   async function fetchRecipes() {
     const queries = [];
+    if (categoryFilter) {
+      queries.push({
+        field: "category",
+        condition: "==",
+        value: categoryFilter,
+      });
+    }
     if (!user) {
       queries.push({
         field: "isPublished",
@@ -33,10 +48,27 @@ function App() {
       });
     }
 
+    const orderByField = "publishDate";
+    let orderByDirection;
+
+    if (orderBy) {
+      switch (orderBy) {
+        case "publishDateAsc":
+          orderByDirection = "asc";
+          break;
+        case "publishDateDesc":
+          orderByDirection = "desc";
+          break;
+        default:
+          break;
+      }
+    }
     try {
       const response = await FirebaseFireStoreService.readDocuments({
         collection: "recipes",
         queries: queries,
+        orderByField: orderByField,
+        orderByDirection: orderByDirection,
       });
       let fetchedRecipes = response;
       return fetchedRecipes;
@@ -93,6 +125,28 @@ function App() {
       throw error;
     }
   }
+
+  async function handleDeleteRecipe(recipeId) {
+    const deleteConfirmation = window.confirm(
+      `Are you sure you want to delete this recipe? Ok for Yes. Cancel for No.`
+    );
+    if (deleteConfirmation) {
+      try {
+        FirebaseFireStoreService.deleteDocument("recipes", recipeId);
+        handleFetchRecipes();
+        startTransition(() => {
+          setCurrentRecipe(null);
+        });
+        window.scrollTo(0, 0);
+        alert(`Successfully deleted a recipe with an ID = ${recipeId}`);
+      } catch (error) {
+        console.log(error.message);
+        alert(error.message);
+        throw error;
+      }
+    }
+  }
+
   function handleEditRecipeClick(recipeId) {
     let selectedRecipe = recipes.find((recipe) => {
       return recipe.id === recipeId;
@@ -111,6 +165,7 @@ function App() {
     startTransition(() => {
       setCurrentRecipe(null);
     });
+    window.scrollTo(0, 0);
   }
 
   function lookupCategoryLabel(categoryKey) {
@@ -140,9 +195,70 @@ function App() {
       </div>
 
       <div className="main">
+        <div className="row filters">
+          {" "}
+          <label className="recipe-label input-label">
+            Category:
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                startTransition(() => {
+                  setCategoryFilter(e.target.value);
+                });
+              }}
+              required
+              className="select"
+            >
+              <option value=""></option>
+              <option value="breadsSanwhichsAndPizza">
+                Breads, Sandwhiches, & Pizza
+              </option>
+              <option value="eggsAndBreakfast">Eggs & Breakfast</option>
+
+              <option value="dessertsAndBakedGoods">
+                Deserts & Baked Goods
+              </option>
+              <option value="fishAndSeafood">Fish & Seafood</option>
+
+              <option value="vegtables">Vegtables</option>
+            </select>
+          </label>
+          <label className="input-label">
+            <select
+              className="select"
+              value={orderBy}
+              onChange={(e) =>
+                startTransition(() => {
+                  setOrderBy(e.target.value);
+                })
+              }
+            >
+              <option value="publishDateDesc">
+                Publish Date (newest to oldest)
+              </option>
+              <option value="publishDateAsc">
+                Publish Date (oldest to newest)
+              </option>
+            </select>
+          </label>
+        </div>
         <div className="center">
           <div className="recipe-list-box">
-            {recipes && recipes.length > 0 ? (
+            {isLoading ? (
+              <div className="fire">
+                <div className="flames">
+                  <div className="flame"></div>
+                  <div className="flame"></div>
+                  <div className="flame"></div>
+                  <div className="flame"></div>
+                </div>
+                <div className="logs"></div>
+              </div>
+            ) : null}
+            {!isLoading && recipes && recipes.length === 0 ? (
+              <h5 className="no-recipes">No Recipes Found</h5>
+            ) : null}
+            {!isLoading && recipes && recipes.length > 0 ? (
               <div className="recipe-list">
                 {recipes.map((recipe) => (
                   <div className="recipe-card" key={recipe.id}>
@@ -178,6 +294,7 @@ function App() {
             existingRecipe={currentRecipe}
             handleAddRecipe={handleAddRecipe}
             handleUpdateRecipe={handleUpdateRecipe}
+            handleDeleteRecipe={handleDeleteRecipe}
             handleEditRecipeCancel={handleEditRecipeCancel}
           />
         ) : null}

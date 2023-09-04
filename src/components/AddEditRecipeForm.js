@@ -4,6 +4,7 @@ function AddEditRecipeForm({
   existingRecipe,
   handleAddRecipe,
   handleUpdateRecipe,
+  handleDeleteRecipe,
   handleEditRecipeCancel,
 }) {
   useEffect(() => {
@@ -96,9 +97,9 @@ function AddEditRecipeForm({
       {existingRecipe ? (
         <h2>Update the Recipe</h2>
       ) : (
-        <h2>
+        <div>
           <h2>Add a New Recipe</h2>
-        </h2>
+        </div>
       )}
       <div className="top-form-section">
         <div className="fields">
@@ -225,6 +226,13 @@ function AddEditRecipeForm({
               onClick={handleEditRecipeCancel}
             >
               Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDeleteRecipe(existingRecipe.id)}
+              className="primary-button action-button"
+            >
+              Delete
             </button>
           </>
         ) : null}

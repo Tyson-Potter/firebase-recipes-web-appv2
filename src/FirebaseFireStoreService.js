@@ -9,6 +9,8 @@ import {
   query,
   updateDoc,
   doc,
+  deleteDoc,
+  orderBy,
 } from "firebase/firestore";
 
 const db = getFirestore(firebase);
@@ -22,7 +24,12 @@ const createDocument = async (collectionName, document) => {
   }
 };
 
-const readDocuments = async ({ collection: collectionName, queries }) => {
+const readDocuments = async ({
+  collection: collectionName,
+  queries,
+  orderByField,
+  orderByDirection,
+}) => {
   let collectionRef = collection(db, collectionName);
 
   let queryRef = collectionRef;
@@ -32,9 +39,11 @@ const readDocuments = async ({ collection: collectionName, queries }) => {
       queryRef = query(queryRef, where(field, condition, value));
     });
   }
-
+  if (orderByField && orderByDirection) {
+    queryRef = query(queryRef, orderBy(orderByField, orderByDirection));
+  }
   const querySnapshot = await getDocs(queryRef);
-  const documents = querySnapshot.docs.map((doc) => ({
+  let documents = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
@@ -52,10 +61,16 @@ const updateDocument = async (collectionName, id, document) => {
   }
 };
 
+const deleteDocument = async (collectionName, id) => {
+  const docRef = doc(db, collectionName, id);
+  return deleteDoc(docRef);
+};
+
 const FirebaseFirestoreService = {
   createDocument,
   readDocuments,
   updateDocument,
+  deleteDocument,
 };
 
 export default FirebaseFirestoreService;
