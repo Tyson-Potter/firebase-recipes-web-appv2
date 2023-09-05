@@ -99,54 +99,6 @@ function App() {
       throw error;
     }
   }
-  // async function giveMeCount(cursorId = "") {
-  //   const queries = [];
-  //   if (categoryFilter) {
-  //     queries.push({
-  //       field: "category",
-  //       condition: "==",
-  //       value: categoryFilter,
-  //     });
-  //   }
-  //   if (!user) {
-  //     queries.push({
-  //       field: "isPublished",
-  //       condition: "==",
-  //       value: true,
-  //     });
-  //   }
-
-  //   const orderByField = "publishDate";
-  //   let orderByDirection;
-
-  //   if (orderBy) {
-  //     switch (orderBy) {
-  //       case "publishDateAsc":
-  //         orderByDirection = "asc";
-  //         break;
-  //       case "publishDateDesc":
-  //         orderByDirection = "desc";
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   }
-  //   try {
-  //     const response = await FirebaseFireStoreService.getDocumentCount({
-  //       collection: "recipes",
-  //       queries: queries,
-  //       orderByField: orderByField,
-  //       orderByDirection: orderByDirection,
-  //       perPage: recipesPerPage,
-  //       cursorId: cursorId,
-  //     });
-
-  //     return response;
-  //   } catch (error) {
-  //     console.error(error.message);
-  //     throw error;
-  //   }
-  // }
 
   function handleRecipesPerPageChange(event) {
     const recipesPerPage = event.target.value;
@@ -250,7 +202,6 @@ function App() {
     startTransition(() => {
       setCurrentRecipe(null);
     });
-    window.scrollTo(0, 0);
   }
 
   function lookupCategoryLabel(categoryKey) {

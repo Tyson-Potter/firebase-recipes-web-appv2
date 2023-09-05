@@ -92,10 +92,10 @@ function AddEditRecipeForm({
       className="add-edit-recipe-form-container"
     >
       {existingRecipe ? (
-        <h2>Update the Recipe</h2>
+        <h2 className="add-update-recipe-header">Update the Recipe</h2>
       ) : (
         <div>
-          <h2>Add a New Recipe</h2>
+          <h2 className="add-update-recipe-header">Add a New Recipe</h2>
         </div>
       )}
       <div className="top-form-section">
@@ -116,7 +116,7 @@ function AddEditRecipeForm({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
-              className="select-category"
+              className="select-category select"
             >
               <option value=""></option>
               <option value="breadsSanwhichsAndPizza">
