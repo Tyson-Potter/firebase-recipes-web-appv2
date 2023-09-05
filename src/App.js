@@ -4,7 +4,6 @@ import FirebaseFireStoreService from "./FirebaseFireStoreService";
 import LoginForm from "./components/LoginForm";
 import AddEditRecipeForm from "./components/AddEditRecipeForm";
 import "./App.css";
-// import { orderBy, docs, map } from "firebase/firestore";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -14,12 +13,11 @@ function App() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [orderBy, setOrderBy] = useState("publishDateDesc");
   const [recipesPerPage, setRecipesPerPage] = useState(3);
-  const [recipesCount, setRecipesCount] = useState(count());
-  // FirebaseFireStoreService.getDocumentCount("recipes").then(setRecipesCount);
+  const [recipesCount, setRecipesCount] = useState(null);
+
   useEffect(() => {
     setIsloading(true);
-    setRecipesCount(count());
-    console.log(recipesCount + "Reccount");
+
     fetchRecipes()
       .then((fetchedRecipes) => {
         setRecipes(fetchedRecipes);
@@ -31,53 +29,11 @@ function App() {
       .finally(() => {
         setIsloading(false);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, categoryFilter, orderBy, recipesPerPage]);
-  // useEffect(() => {
-  // console.log( await FirebaseFireStoreService.getDocumentCount("recipes"));
-  // }, [user, categoryFilter, orderBy, recipesPerPage]);
 
   FirebaseAuthService.subscribeToAuthChanges(setUser);
-  async function count() {
-    const queries = [];
-    if (categoryFilter) {
-      queries.push({
-        field: "category",
-        condition: "==",
-        value: categoryFilter,
-      });
-    }
-    if (!user) {
-      queries.push({
-        field: "isPublished",
-        condition: "==",
-        value: true,
-      });
-    }
-    let fetchedRecipes = [];
-    const orderByField = "publishDate";
-    let orderByDirection;
 
-    if (orderBy) {
-      switch (orderBy) {
-        case "publishDateAsc":
-          orderByDirection = "asc";
-          break;
-        case "publishDateDesc":
-          orderByDirection = "desc";
-          break;
-        default:
-          break;
-      }
-    }
-    let count = FirebaseFireStoreService.getDocumentCount({
-      collection: "recipes",
-      queries: queries,
-      orderByField: orderByField,
-      orderByDirection: orderByDirection,
-    });
-    console.log(count.size + "coungeageageagt");
-    return count.size;
-  }
   async function fetchRecipes(cursorId = "") {
     const queries = [];
     if (categoryFilter) {
@@ -94,7 +50,7 @@ function App() {
         value: true,
       });
     }
-    let fetchedRecipes = [];
+
     const orderByField = "publishDate";
     let orderByDirection;
 
@@ -120,17 +76,18 @@ function App() {
         cursorId: cursorId,
       });
 
-      let newRecipes = response.docs.map((doc) => ({
+      let newRecipes = response.results.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-
+      setRecipesCount(response.recipeSize);
+      console.log(response.recipeSize);
       if (cursorId) {
         let fetchedRecipes = [...recipes, ...newRecipes];
 
         return fetchedRecipes;
       } else {
-        let fetchedRecipes = response.docs.map((doc) => ({
+        let fetchedRecipes = response.results.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
@@ -141,6 +98,54 @@ function App() {
       throw error;
     }
   }
+  // async function giveMeCount(cursorId = "") {
+  //   const queries = [];
+  //   if (categoryFilter) {
+  //     queries.push({
+  //       field: "category",
+  //       condition: "==",
+  //       value: categoryFilter,
+  //     });
+  //   }
+  //   if (!user) {
+  //     queries.push({
+  //       field: "isPublished",
+  //       condition: "==",
+  //       value: true,
+  //     });
+  //   }
+
+  //   const orderByField = "publishDate";
+  //   let orderByDirection;
+
+  //   if (orderBy) {
+  //     switch (orderBy) {
+  //       case "publishDateAsc":
+  //         orderByDirection = "asc";
+  //         break;
+  //       case "publishDateDesc":
+  //         orderByDirection = "desc";
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   }
+  //   try {
+  //     const response = await FirebaseFireStoreService.getDocumentCount({
+  //       collection: "recipes",
+  //       queries: queries,
+  //       orderByField: orderByField,
+  //       orderByDirection: orderByDirection,
+  //       perPage: recipesPerPage,
+  //       cursorId: cursorId,
+  //     });
+
+  //     return response;
+  //   } catch (error) {
+  //     console.error(error.message);
+  //     throw error;
+  //   }
+  // }
 
   function handleRecipesPerPageChange(event) {
     const recipesPerPage = event.target.value;
@@ -215,6 +220,9 @@ function App() {
         handleFetchRecipes();
         startTransition(() => {
           setCurrentRecipe(null);
+          // setRecipesCount(
+          //   giveMeCount().then((count) => setRecipesCount(count))
+          // );
         });
         window.scrollTo(0, 0);
         alert(`Successfully deleted a recipe with an ID = ${recipeId}`);

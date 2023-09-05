@@ -54,6 +54,8 @@ const readDocuments = async ({
       orderBy(orderByField, orderByDirection)
     );
   }
+  const recipeCount = await getDocs(collectionRef);
+
   if (perPage) {
     collectionRef = query(collectionRef, limit(perPage));
   }
@@ -70,9 +72,39 @@ const readDocuments = async ({
   }
 
   const querySnapshot = await getDocs(collectionRef);
-  return querySnapshot;
-};
+  let docObject = {
+    results: querySnapshot,
+    recipeSize: recipeCount.size,
+  };
 
+  return docObject;
+};
+const getDocumentCount = async ({
+  collection: collectionName,
+  queries,
+  orderByField,
+  orderByDirection,
+  perPage,
+  cursorId,
+}) => {
+  let collectionRef = collection(db, collectionName);
+
+  if (queries && queries.length > 0) {
+    queries.forEach(({ field, condition, value }) => {
+      collectionRef = query(collectionRef, where(field, condition, value));
+    });
+  }
+  if (orderByField && orderByDirection) {
+    collectionRef = query(
+      collectionRef,
+      orderBy(orderByField, orderByDirection)
+    );
+  }
+
+  const querySnapshot = await getDocs(collectionRef);
+
+  return querySnapshot.size;
+};
 const updateDocument = async (collectionName, id, document) => {
   try {
     const docRef = doc(db, collectionName, id);
@@ -87,11 +119,7 @@ const deleteDocument = async (collectionName, id) => {
   const docRef = doc(db, collectionName, id);
   return deleteDoc(docRef);
 };
-const getDocumentCount = async (collectionName) => {
-  const collectionRef = collection(db, collectionName);
-  const snapshot = await getDocs(collectionRef);
-  return snapshot.size;
-};
+
 const FirebaseFirestoreService = {
   createDocument,
   readDocuments,
