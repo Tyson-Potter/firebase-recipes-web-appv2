@@ -6,28 +6,26 @@ function AddEditRecipeForm({
   handleUpdateRecipe,
   handleDeleteRecipe,
   handleEditRecipeCancel,
+  formatDate,
 }) {
   useEffect(() => {
     if (existingRecipe) {
       setName(existingRecipe.name);
       setCategory(existingRecipe.category);
       setDirections(existingRecipe.directions);
-      setPublishDate(
-        existingRecipe.publishDate.toDate().toISOString().substring(0, 10)
-      );
+      setPublishDate(formatDate(existingRecipe.publishDate, "YearMonthDay"));
 
       setIngredients(existingRecipe.ingredients);
     } else {
       resetForm();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingRecipe]);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
-  ////////////////////come back to fix this
   const [publishDate, setPublishDate] = useState("");
-
   const [directions, setDirections] = useState("");
   const [ingredients, setIngredients] = useState([]);
   const [ingredientName, setIngredientName] = useState("");
@@ -44,8 +42,8 @@ function AddEditRecipeForm({
         name,
         category,
         directions,
-        publishDate: new Date(publishDate),
-        //add unix timestamp
+        publishDate: new Date(publishDate).toISOString(),
+        unixTimeStampInMilliseconds: new Date().getTime(),
         isPublished,
         ingredients,
       };
@@ -60,7 +58,6 @@ function AddEditRecipeForm({
 
   async function HandleDeleteIngredient(ingredientName) {
     const remainimgIngredients = ingredients.filter((ingredient) => {
-      console.log(ingredient);
       return ingredient !== ingredientName;
     });
     setIngredients(remainimgIngredients);
@@ -119,7 +116,7 @@ function AddEditRecipeForm({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required
-              className="select"
+              className="select-category"
             >
               <option value=""></option>
               <option value="breadsSanwhichsAndPizza">

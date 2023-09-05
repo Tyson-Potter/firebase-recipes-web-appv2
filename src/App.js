@@ -11,7 +11,7 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsloading] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [orderBy, setOrderBy] = useState("publishDateDesc");
+  const [orderBy, setOrderBy] = useState("unixTimeStampInMillisecondsDesc");
   const [recipesPerPage, setRecipesPerPage] = useState(3);
   const [recipesCount, setRecipesCount] = useState(null);
 
@@ -51,15 +51,15 @@ function App() {
       });
     }
 
-    const orderByField = "publishDate";
+    const orderByField = "unixTimeStampInMilliseconds";
     let orderByDirection;
 
     if (orderBy) {
       switch (orderBy) {
-        case "publishDateAsc":
+        case "unixTimeStampInMillisecondsAsc":
           orderByDirection = "asc";
           break;
-        case "publishDateDesc":
+        case "unixTimeStampInMillisecondsDesc":
           orderByDirection = "desc";
           break;
         default:
@@ -80,8 +80,9 @@ function App() {
         id: doc.id,
         ...doc.data(),
       }));
+
       setRecipesCount(response.recipeSize);
-      console.log(response.recipeSize);
+
       if (cursorId) {
         let fetchedRecipes = [...recipes, ...newRecipes];
 
@@ -220,9 +221,6 @@ function App() {
         handleFetchRecipes();
         startTransition(() => {
           setCurrentRecipe(null);
-          // setRecipesCount(
-          //   giveMeCount().then((count) => setRecipesCount(count))
-          // );
         });
         window.scrollTo(0, 0);
         alert(`Successfully deleted a recipe with an ID = ${recipeId}`);
@@ -266,14 +264,22 @@ function App() {
     const label = categories[categoryKey];
     return label;
   }
+  function formatDate(date, dateFormat) {
+    const parsedDate = new Date(date);
+    const year = parsedDate.getUTCFullYear();
+    const month = String(parsedDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(parsedDate.getUTCDate()).padStart(2, "0");
 
-  function formatDate(date) {
-    const day = date.getUTCDate();
-    const month = date.getUTCMonth() + 1;
-    const year = date.getUTCFullYear();
-    const dateString = `${month}-${day}-${year}`;
-    return dateString;
+    switch (dateFormat) {
+      case "MonthDayYear":
+        return `${month}-${day}-${year}`;
+      case "YearMonthDay":
+        return `${year}-${month}-${day}`;
+      default:
+        throw new Error("Invalid dateFormat provided");
+    }
   }
+
   return (
     <div className="App">
       <div className="title-row">
@@ -320,10 +326,10 @@ function App() {
                 })
               }
             >
-              <option value="publishDateDesc">
+              <option value="unixTimeStampInMillisecondsDesc">
                 Publish Date (newest to oldest)
               </option>
-              <option value="publishDateAsc">
+              <option value="unixTimeStampInMillisecondsAsc">
                 Publish Date (oldest to newest)
               </option>
             </select>
@@ -358,7 +364,8 @@ function App() {
                     </div>
 
                     <div className="recipe-field">
-                      Publish Date: {formatDate(recipe.publishDate.toDate())}
+                      Publish Date:
+                      {formatDate(recipe.publishDate, "MonthDayYear")}
                     </div>
 
                     {user ? (
@@ -416,6 +423,7 @@ function App() {
             handleUpdateRecipe={handleUpdateRecipe}
             handleDeleteRecipe={handleDeleteRecipe}
             handleEditRecipeCancel={handleEditRecipeCancel}
+            formatDate={formatDate}
           />
         ) : null}
       </div>
