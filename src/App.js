@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     setIsloading(true);
-
+    console.log(recipesCount);
     fetchRecipes()
       .then((fetchedRecipes) => {
         setRecipes(fetchedRecipes);
@@ -80,9 +80,9 @@ function App() {
         id: doc.id,
         ...doc.data(),
       }));
-
+      console.log(response.recipeSize + "rgsg");
       setRecipesCount(response.recipeSize);
-
+      console.log(response.recipeSize);
       if (cursorId) {
         let fetchedRecipes = [...recipes, ...newRecipes];
 
