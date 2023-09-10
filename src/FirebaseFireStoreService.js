@@ -79,33 +79,7 @@ const readDocuments = async ({
 
   return docObject;
 };
-//mabye use for updaing the recipe count
-// const getDocumentCount = async ({
-//   collection: collectionName,
-//   queries,
-//   orderByField,
-//   orderByDirection,
-//   perPage,
-//   cursorId,
-// }) => {
-//   let collectionRef = collection(db, collectionName);
 
-//   if (queries && queries.length > 0) {
-//     queries.forEach(({ field, condition, value }) => {
-//       collectionRef = query(collectionRef, where(field, condition, value));
-//     });
-//   }
-//   if (orderByField && orderByDirection) {
-//     collectionRef = query(
-//       collectionRef,
-//       orderBy(orderByField, orderByDirection)
-//     );
-//   }
-
-//   const querySnapshot = await getDocs(collectionRef);
-
-//   return querySnapshot.size;
-// };
 const updateDocument = async (collectionName, id, document) => {
   try {
     const docRef = doc(db, collectionName, id);
@@ -126,7 +100,6 @@ const FirebaseFirestoreService = {
   readDocuments,
   updateDocument,
   deleteDocument,
-  // getDocumentCount,
 };
 
 export default FirebaseFirestoreService;
